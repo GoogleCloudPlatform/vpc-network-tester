@@ -51,8 +51,13 @@ the default service in your project.
     * Update vpc_access_connector name to reference your connector 
       ([see instructions for where to find it](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access))
 1. Optionally: Build iperf3 binary:
-    * You can skip this step if you don't want to run iperf3 throughput tests
-    * ```cd ipref3_build; ./build_iperf3.sh```
+    * This step requires a local docker install to build the iperf3 binary.
+      You can skip this step if you don't want to run iperf3 throughput tests.
+    * ```shell
+    docker run -it --name iperf3-build alpine sh -c 'apk add gcc make git musl-dev && git clone https://github.com/esnet/iperf.git && cd iperf && LDFLAGS=-static ./configure --enable-shared=no --enable-static-bin && make && strip src/iperf3'
+    docker cp iperf3-build:/iperf/src/iperf3 appengine
+    docker rm iperf3-build
+    ```
 1. Deploy App Engine service to your project
     * ```cd appengine; gcloud app deploy```
 
@@ -234,3 +239,18 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
     ab -s 600 -n 1000 https://[SERVICE_HOSTNAME]/iperf?host=10.128.0.2\&streams=20\&time=30\&port=$((i+5200)) >& log_$((i)) < /dev/null &
 done
 ```
+
+## Uninstallation from your Google Cloud Project
+
+### Uninstall Cloud Run Service
+
+```shell
+gcloud run --platform=managed --region=[REGION] services delete [SERVICE_NAME]
+```
+
+### Uninstall App Engine Service
+
+```shell
+gcloud app services delete [SERVICE_NAME]
+```
+
