@@ -1,0 +1,7 @@
+runtime: python37
+service: nettest
+#instance_class: F4
+automatic_scaling:
+  max_concurrent_requests: 1
+vpc_access_connector:
+  name: "projects/[PROJECT]/locations/[REGION]/connectors/[CONNECTOR_ID]"
