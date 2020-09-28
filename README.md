@@ -1,4 +1,4 @@
-# Serverles VPC Access Diagnostic Tools
+# Serverless VPC Access Diagnostic Tools
 
 This repository contains Google App Engine and Google Cloud Run services
 that are deployable in a customer's project to diagnose and debug the
@@ -25,11 +25,21 @@ build this container image with the provided Dockerfile on your local machine
 but the instructions below are for Cloud Build:
 
 1. Clone this repository from GitHub.
-    * There is no need to fork it.
 1. Build container image (using Cloud Build):
-    * ```cd cloudrun; gcloud builds submit --tag gcr.io/[PROJECT]/vpc-access-diagnostics```
+   ```sh
+   cd cloudrun
+   gcloud builds submit --tag gcr.io/[PROJECT]/vpc-network-tester
+   ```
+   
 1. Deploy Cloud Run service to your project
-    * ```cd cloudrun; gcloud run --platform=managed --region=[REGION] deploy [SERVICE_NAME] --image gcr.io/[PROJECT]/vpc-access-diagnostics --vpc-connector=projects/[PROJECT]/locations/[REGION]/connectors/[CONNECTOR_NAME]```
+   ```sh
+   cd cloudrun
+   gcloud run deploy [SERVICE_NAME] \
+       --platform=managed \
+       --region=[REGION] \
+       --image gcr.io/[PROJECT]/vpc-network-tester \
+       --vpc-connector=projects/[PROJECT]/locations/[REGION]/connectors/[CONNECTOR_NAME]
+   ```
 
 ### Install App Engine service
 
@@ -39,7 +49,6 @@ optionally choosing a different service name, and it is possible to use this as
 the default service in your project.
 
 1. Clone this repository from GitHub.
-    * There is no need to fork it.
 1. Modify appengine/app.yaml to:
     * Optionally: change the App Engine service name
     * Optionally: increase the instance class
@@ -53,13 +62,16 @@ the default service in your project.
 1. Optionally: Build iperf3 binary:
     * This step requires a local docker install to build the iperf3 binary.
       You can skip this step if you don't want to run iperf3 throughput tests.
-    * ```shell
-    docker run -it --name iperf3-build alpine sh -c 'apk add gcc make git musl-dev && git clone https://github.com/esnet/iperf.git && cd iperf && LDFLAGS=-static ./configure --enable-shared=no --enable-static-bin && make && strip src/iperf3'
-    docker cp iperf3-build:/iperf/src/iperf3 appengine
-    docker rm iperf3-build
-    ```
+      ```sh
+      docker run -it --name iperf3-build alpine sh -c 'apk add gcc make git musl-dev && git clone https://github.com/esnet/iperf.git && cd iperf && LDFLAGS=-static ./configure --enable-shared=no --enable-static-bin && make && strip src/iperf3'
+      docker cp iperf3-build:/iperf/src/iperf3 appengine
+      docker rm iperf3-build
+      ```
 1. Deploy App Engine service to your project
-    * ```cd appengine; gcloud app deploy```
+   ```sh
+   cd appengine
+   gcloud app deploy
+   ```
 
 ## Usage
 
@@ -244,13 +256,13 @@ done
 
 ### Uninstall Cloud Run Service
 
-```shell
+```sh
 gcloud run --platform=managed --region=[REGION] services delete [SERVICE_NAME]
 ```
 
 ### Uninstall App Engine Service
 
-```shell
+```sh
 gcloud app services delete [SERVICE_NAME]
 ```
 
